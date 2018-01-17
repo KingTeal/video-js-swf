@@ -438,6 +438,7 @@ package com.videojs.providers{
             _ns = new NetStream(_nc);
             _ns.addEventListener(NetStatusEvent.NET_STATUS, onNetStreamStatus);
             _ns.client = this;
+            //_ns.bufferTime = 1;
             _ns.bufferTime = 0;
             _ns.bufferTimeMax = 1;
             _ns.play(_src.streamURL);
@@ -531,6 +532,18 @@ package com.videojs.providers{
                         _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_START, {info:e.info}));
                     }
                     _loadStarted = true;
+                    if(_ns.bufferTime == 0) {
+                        _isBuffering = false;
+                        _isPlaying = true;
+                        _model.broadcastEventExternally(ExternalEventName.ON_BUFFER_FULL);
+                        _model.broadcastEventExternally(ExternalEventName.ON_CAN_PLAY);
+                        _model.broadcastEventExternally(ExternalEventName.ON_START);
+                        if(_pausePending){
+                            _pausePending = false;
+                            _ns.pause();
+                            _isPaused = true;
+                        }                        
+                    }
                     break;
 
                 case "NetStream.Buffer.Full":
